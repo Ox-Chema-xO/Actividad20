@@ -1,0 +1,23 @@
+# Entorno virtual Python
+venv/
+.env
+
+# Byte-code Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Archivos de Terraform (estado, lock y carpetas de trabajo)
+*.tfstate
+*.tfstate.*
+*.tfvars
+.terraform/
+**/modules/**/.terraform/
+*.tfplan
+crash.log
+
+# Carpeta generada de entornos (opcional, si no quieres versionarla)
+environments/
+
+# Archivos de sistema (macOS, etc.)
+.DS_Store

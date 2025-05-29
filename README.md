@@ -64,6 +64,10 @@ Cuando cambian variables de configuración, Terraform los mapea a **triggers** q
 
   * ¿Qué pasa si editas directamente `main.tf.json` en lugar de la plantilla de variables?
 
+      Si editamos directamente main.tf.json de modules/simulated_app/ tendríamos que modificar cada aparición de una variable de la plantilla de variables (por ejemplo var.name), esto estaría propenso a errores como nombrar distinto a la misma variable, además obteniendo un bajo retorno de inversión ROI temporal, debido a que tendríamos que modificar directamente cada aparición de esta variable en el main.tf.json.
+
+      En el otro caso, si editamos directamente main.tf.json de alguno de los entornos creados por generate_envs.py: Introducimos la desincronización, por lo que rompemos la idempotencia del script al no tener entornos uniformes. También, destruimos el determinismo del sistema: no podremos garantizar que después de “terraform apply” se genere el mismo estado que en los otros entornos. También perdemos la trazabilidad de las modificaciones.
+
 #### Procedimiento
 
 1. En `modules/simulated_app/network.tf.json`, cambia:

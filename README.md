@@ -17,8 +17,10 @@ Después verás cómo Terraform identifica cambios, remedia desvíos manuales y 
    ```
    modules/simulated_app/
      ├─ network.tf.json
-     └─ main.tf.json
+     └─main.tf.json
    generate_envs.py
+   main.py
+   requirements.txt
    ```
 2. **Verifica** que puedes ejecutar:
 
@@ -27,6 +29,9 @@ Después verás cómo Terraform identifica cambios, remedia desvíos manuales y 
    cd environments/app1
    terraform init
    ```
+
+   ![image](https://github.com/user-attachments/assets/29b323e3-2fb1-4b8b-b676-527eaf13e59f)
+
 3. **Objetivo**: conocer la plantilla base y el generador en Python.
 
 ####  Fase 1: Expresando el cambio de infraestructura

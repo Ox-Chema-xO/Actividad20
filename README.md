@@ -81,12 +81,59 @@ Cuando cambian variables de configuración, Terraform los mapea a **triggers** q
        }
      ]
    ```
+
+   ```terraform
+   (venv) hoperrs@hoperrs:~/Escritorio/Actividad20/environments/app1$ cat network.tf.json 
+   {
+      "variable": [
+         {
+               "name": [
+                  {
+                     "type": "string",
+                     "default": "hello-world",
+                     "description": "Nombre del servidor local"
+                  }
+               ]
+         },
+         {
+               "network": [
+                  {
+                     "type": "string",
+                     "default": "lab-net",
+                     "description": "Nombre de la red local"
+                  }
+               ]
+         }
+      ]
+   ```
+
 2. Regenera **solo** el app1:
 
    ```bash
    python generate_envs.py
    cd environments/app1
    terraform plan
+   ```
+
+   ```terraform
+   (venv) hoperrs@hoperrs:~/Escritorio/Actividad20/environments/app1$ terraform plan
+   null_resource.app1: Refreshing state... [id=2815780140718114779]
+
+   Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+   -/+ destroy and then create replacement
+
+   Terraform will perform the following actions:
+
+   # null_resource.app1 must be replaced
+   -/+ resource "null_resource" "app1" {
+         ~ id       = "2815780140718114779" -> (known after apply)
+         ~ triggers = { # forces replacement
+            ~ "network" = "local-network" -> "lab-net"
+               # (1 unchanged element hidden)
+         }
+      }
+
+   Plan: 1 to add, 0 to change, 1 to destroy.
    ```
 
    Observa que el **plan** indica:

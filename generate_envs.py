@@ -27,20 +27,17 @@ def render_and_write(env):
                     {
                         env["name"]: [
                             {
-                                "triggers": {
-                                    "name":    env["name"],
-                                    "network": env["network"]
-                                },
                                 "provisioner": [
                                     {
                                         "local-exec": {
-                                            "command": (
-                                                f"echo 'Arrancando servidor "
-                                                f"{env['name']} en red {env['network']}'"
-                                            )
+                                            "command": "echo 'Arrancando servidor ${var.name} en red ${var.network}'"
                                         }
                                     }
-                                ]
+                                ],
+                                "triggers": {
+                                    "name": "${var.name}",
+                                    "network": "${var.network}"
+                                }
                             }
                         ]
                     }

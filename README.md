@@ -43,6 +43,10 @@ Cuando cambian variables de configuración, Terraform los mapea a **triggers** q
 * **Pregunta**
 
   * ¿Cómo interpreta Terraform el cambio de variable?
+     
+      Terraform maneja el cambio de la variable network como un cambio en el atributo “triggers” del recurso null_resource. Mantiene un estado de los valores actuales de cada recurso, y cuando se detecta un cambio entre el estado y la configuración, al aplicar ‘terraform plan’ se genera un plan que mostrará los atributos exactos a cambiar. En este proyecto, al modificar solo el valor de una variable que se usa como trigger, Terraform sabe que únicamente necesita actualizar ese valor, evitando recrear todo el recurso.
+
+
   * ¿Qué diferencia hay entre modificar el JSON vs. parchear directamente el recurso?
   * ¿Por qué Terraform no recrea todo el recurso, sino que aplica el cambio "in-place"?
   * ¿Qué pasa si editas directamente `main.tf.json` en lugar de la plantilla de variables?

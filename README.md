@@ -48,6 +48,10 @@ Cuando cambian variables de configuración, Terraform los mapea a **triggers** q
 
 
   * ¿Qué diferencia hay entre modificar el JSON vs. parchear directamente el recurso?
+
+      Cuando modificamos network.tf.json los cambios que hagamos se realizarán también en todos los entornos que depende de el, esto lo podemos apreciar volviendo a ejecutar generate_envs.py y observando como los cambios se aplicaron en los entornos que dependen del json. Además nos brinda una mejor trazabilidad, versionamiento y reproducibilidad. En cambio parchear directamente el recurso, el cambio solo se da en el entorno donde se está parcheando, esto crea una desviación(drift) respecto a la plantilla, entonces al regenerar los entornos desde la plantilla, el parche puede sobreescribirse y  además se pierde trazabilidad.
+
+      
   * ¿Por qué Terraform no recrea todo el recurso, sino que aplica el cambio "in-place"?
   * ¿Qué pasa si editas directamente `main.tf.json` en lugar de la plantilla de variables?
 

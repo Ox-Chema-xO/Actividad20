@@ -53,6 +53,10 @@ Cuando cambian variables de configuración, Terraform los mapea a **triggers** q
 
       
   * ¿Por qué Terraform no recrea todo el recurso, sino que aplica el cambio "in-place"?
+  
+      Terraform busca optimizar para hacer solo los cambios mínimos necesarios, ya que el recurso null_resource está diseñado específicamente para responder a cambios en sus triggers. Solo se está cambiando el atributo trigger.network y no la estructura fundamental del recurso, por lo que se mantiene cualquier estado o dependencia del recurso intacto. Así en el plan solo aparece la actualización del campo triggers, en lugar de destruir y recrear todo.
+
+
   * ¿Qué pasa si editas directamente `main.tf.json` en lugar de la plantilla de variables?
 
 #### Procedimiento

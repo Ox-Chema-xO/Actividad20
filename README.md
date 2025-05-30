@@ -141,15 +141,51 @@ Cuando cambian variables de configuración, Terraform los mapea a **triggers** q
    > \~ null\_resource.app1: triggers.network: "net1" -> "lab-net"
 
 #### Fase 2: Entendiendo la inmutabilidad
-
+Para simular un `drift` modificaremos el estado real de nuestra infraestructura en el archivo `terraform.tfstate` de manera directa (out-of-band changes) esto generara una desviacion del estado deseado que fue definido en nuestros archivos de configuracion
+de terraform.
+ 
 #### A. Remediación de 'drift' (out-of-band changes)
 
 1. **Simulación**
 
    ```bash
    cd environments/app2
-   # edita manualmente main.tf.json: cambiar "name":"app2" ->"hacked-app"
+   # edita manualmente terraform.tfstate: cambiar "name":"hello-world" ->"hacked-app"
    ```
+```terraform
+{
+  "version": 4,
+  "terraform_version": "1.12.1",
+  "serial": 4,
+  "lineage": "ee537465-8634-cec9-cf29-afd33f8e4eb3",
+  "outputs": {},
+  "resources": [
+    {
+      "mode": "managed",
+      "type": "null_resource",
+      "name": "app2",
+      "provider": "provider[\"registry.terraform.io/hashicorp/null\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "id": "6820114600451844981",
+            "triggers": {
+              "name": "hacked-app",
+              "network": "local-network"
+            }
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0
+        }
+      ]
+    }
+  ],
+  "check_results": null
+}
+```
+
+
 2. Ejecuta:
 
    ```bash
@@ -157,30 +193,148 @@ Cuando cambian variables de configuración, Terraform los mapea a **triggers** q
    ```
 
     Verás un plan que propone **revertir** ese cambio.
+    
+```terraform
+(venv) diegodev@HPavilion:~/Desktop/dev-practice/Iac_orquestador_local/environments/app2$ terraform apply
+null_resource.app2: Refreshing state... [id=7967616035934440214]
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+-/+ destroy and then create replacement
+
+Terraform will perform the following actions:
+
+  # null_resource.app2 must be replaced
+-/+ resource "null_resource" "app2" {
+      ~ id       = "7967616035934440214" -> (known after apply)
+      ~ triggers = { # forces replacement
+          ~ "name"    = "hacked-app" -> "hello-world"
+            # (1 unchanged element hidden)
+        }
+    }
+
+Plan: 1 to add, 0 to change, 1 to destroy.
+```
+
 3. **Aplica**
 
    ```bash
    terraform apply
    ```
-    Y comprueba que vuelve a "app2".
-   
+    
+```terraform
+{
+  "version": 4,
+  "terraform_version": "1.12.1",
+  "serial": 4,
+  "lineage": "ee537465-8634-cec9-cf29-afd33f8e4eb3",
+  "outputs": {},
+  "resources": [
+    {
+      "mode": "managed",
+      "type": "null_resource",
+      "name": "app2",
+      "provider": "provider[\"registry.terraform.io/hashicorp/null\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "id": "6820114600451844981",
+            "triggers": {
+              "name": "hello-world",
+              "network": "local-network"
+            }
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0
+        }
+      ]
+    }
+  ],
+  "check_results": null
+}
+```
+Podemos verificar que vuelve a "hello-world".
+
+  
 
 #### B. Migrando a IaC
 
-* **Mini-reto**
- 1. Crea en un nuevo directorio `legacy/` un simple `run.sh` + `config.cfg` con parámetros (p.ej. puerto, ruta).
+  
+*  **Mini-reto**
 
-    ```
-     echo 'PORT=8080' > legacy/config.cfg
-     echo '#!/bin/bash' > legacy/run.sh
-     echo 'echo "Arrancando $PORT"' >> legacy/run.sh
-     chmod +x legacy/run.sh
-     ```
-  2. Escribe un script Python que:
+1. Crea en un nuevo directorio `legacy/` un simple `run.sh` + `config.cfg` con parámetros (p.ej. puerto, ruta).
 
-     * Lea `config.cfg` y `run.sh`.
-     * Genere **automáticamente** un par `network.tf.json` + `main.tf.json` equivalente.
-     * Verifique con `terraform plan` que el resultado es igual al script legacy.
+  
+
+```
+
+echo 'PORT=8080' > legacy/config.cfg
+
+echo '#!/bin/bash' > legacy/run.sh
+
+echo 'echo "Arrancando $PORT"' >> legacy/run.sh
+
+chmod +x legacy/run.sh
+
+```
+
+2. Escribe un script Python que:
+
+* Lea `config.cfg` y `run.sh`.
+
+* Genere **automáticamente** un par `network.tf.json` + `main.tf.json` equivalente.
+
+Para ello creamos el script python `legacy_to_tf.py` y lo ejecutamos.
+```terraform
+(venv) diegodev@HPavilion:~/Desktop/dev-practice/Iac_orquestador_local$ python3 legacy_to_tf.py 
+==> terraform init
+Initializing the backend...
+Initializing provider plugins...
+- Finding latest version of hashicorp/null...
+- Installing hashicorp/null v3.2.4...
+- Installed hashicorp/null v3.2.4 (signed by HashiCorp)
+Terraform has created a lock file .terraform.lock.hcl to record the provider
+selections it made above. Include this file in your version control repository
+so that Terraform can guarantee to make the same selections by default when
+you run "terraform init" in the future.
+
+Terraform has been successfully initialized!
+
+You may now begin working with Terraform. Try running "terraform plan" to see
+any changes that are required for your infrastructure. All Terraform commands
+should now work.
+
+If you ever set or change modules or backend configuration for Terraform,
+rerun this command to reinitialize your working directory. If you forget, other
+commands will detect it and remind you to do so if necessary.
+
+==> terraform plan
+
+Terraform used the selected providers to generate the following execution plan. Resource
+actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # null_resource.legacy-server will be created
+  + resource "null_resource" "legacy-server" {
+      + id       = (known after apply)
+      + triggers = {
+          + "port" = "8080"
+        }
+    }
+
+Plan: 1 to add, 0 to change, 0 to destroy.
+
+────────────────────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't guarantee to take
+exactly these actions if you run "terraform apply" now.
+
+Configuracion terraform generada en 'legacy/tf_env/'
+
+```
+Podemos observar con terraform plan que el resultado es igual al script legacy y ademas se genero la carpeta `legacy/tf_env/` que contiene `network.tf.json` + `main.tf.json` 
 
 #### Fase 3: Escribiendo código limpio en IaC 
 
